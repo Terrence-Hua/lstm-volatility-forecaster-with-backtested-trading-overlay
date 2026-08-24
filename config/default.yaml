@@ -1,0 +1,56 @@
+# Reproducibility config — all scripts read from here.
+# Override individual keys with --config-override key=value at the CLI.
+
+data:
+  ticker: "SPY"
+  start: "2015-01-01"
+  end: "2024-12-31"
+  synthetic: false          # set true to use generated data (no internet needed)
+  synthetic_seed: 42
+  synthetic_n: 2500         # trading days in synthetic series
+
+features:
+  rv_windows: [1, 5, 22]   # days for realized vol rolling windows
+  return_lags: [1, 2, 5]    # lagged return features
+  calendar: true             # day-of-week, month dummies
+
+models:
+  lstm:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_len: 22              # lookback window (trading days)
+    batch_size: 64
+    lr: 1.0e-3
+    epochs: 50
+    seed: 42
+  gru:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_len: 22
+    batch_size: 64
+    lr: 1.0e-3
+    epochs: 50
+    seed: 42
+  har_rv:
+    lags: [1, 5, 22]
+  garch:
+    p: 1
+    q: 1
+
+evaluation:
+  walk_forward:
+    train_window: 500        # rolling training window (days)
+    test_window: 63          # one quarter per fold
+    min_train: 250
+
+backtest:
+  vol_threshold: 0.02        # minimum spread (forecasted - implied) to trade
+  position_limit: 1.0        # max notional per trade (normalised)
+  bid_ask_bps: 20            # option bid-ask cost in basis points of premium
+  vega_slippage: 0.05        # fraction of vega paid as slippage
+
+output:
+  results_dir: "results"
+  model_dir: "results/models"
